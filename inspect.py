@@ -14,7 +14,7 @@ fmt = "{asctime}, {name}:{lineno}:{funcName}(), {levelname}, {message}"
 logging.basicConfig(level=logging.DEBUG, format=fmt, style="{")
 
 RPM = re.compile(r"^(CentOS|AlmaLinux|Scientific|Rocky|Oracle|openSUSE|Fedora).*$") # noqa
-WIN = re.compile(r"^(Microsoft).*$")
+WIN = re.compile(r"^(Microsoft|Windows).*$")
 
 
 def main(vmdk_path):
