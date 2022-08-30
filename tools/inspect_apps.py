@@ -79,10 +79,7 @@ def list_applications_deb(path):
     with open(dpkg_db) as f:
         name = version = ""
         installed = False
-        count = 0
         for line in f:
-            if count >= 10:
-                break
             line = line.strip()
             if not line:
                 if name and version and installed:
@@ -90,7 +87,6 @@ def list_applications_deb(path):
                         "name": name,
                         "version": version
                     })
-                    count += 1
                 name = version = ""
                 installed = False
             elif line.startswith("Package:"):
