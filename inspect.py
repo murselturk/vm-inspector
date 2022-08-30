@@ -5,14 +5,19 @@ import os
 import re
 import sys
 
-from tools import libvslvm, lklfuse, nbdfuse, unmount, rmdir
-from tools.inspect_apps import list_applications_rpm, list_applications_windows
+from tools import libvslvm, lklfuse, nbdfuse, subfiles, unmount, rmdir
+from tools.inspect_apps import (
+    list_applications_deb,
+    list_applications_rpm,
+    list_applications_windows
+)
 from tools.inspect_os import get_linux_os_info, get_windows_os_info
 from tools.pyparted import list_partitions
 
 fmt = "{asctime}, {name}:{lineno}:{funcName}(), {levelname}, {message}"
 logging.basicConfig(level=logging.DEBUG, format=fmt, style="{")
 
+DEB = re.compile(r"^(Debian|Ubuntu|Linux\sMint|LMDE).*$")
 RPM = re.compile(r"^(CentOS|AlmaLinux|Scientific|Rocky|Oracle|openSUSE|Fedora).*$") # noqa
 WIN = re.compile(r"^(Microsoft|Windows).*$")
 
@@ -36,17 +41,15 @@ def main(vmdk_path):
             lvm_mp = libvslvm.mount(nbd, part["offset"])
             if not lvm_mp:
                 continue
-            for vol in os.listdir(lvm_mp):
+            for vol in subfiles(lvm_mp):
                 vol_path = os.path.join(lvm_mp, vol)
                 vol_parts = list_partitions(vol_path)
                 if not vol_parts:
                     continue
-                mp = lklfuse.mount(vol_path, vol_parts[0]["type"])
-                if mp:
+                if mp := lklfuse.mount(vol_path, vol_parts[0]["type"]):
                     fs_mps.append((mp, parts[0]["type"]))
         else:
-            mp = lklfuse.mount(nbd, part["type"], part["nr"])
-            if mp:
+            if mp := lklfuse.mount(nbd, part["type"], part["nr"]):
                 fs_mps.append((mp, part["type"]))
 
     os_info = {}
@@ -60,7 +63,9 @@ def main(vmdk_path):
             break
 
     for fspath, _ in fs_mps:
-        if RPM.match(os_info["name"]):
+        if DEB.match(os_info["name"]):
+            apps = list_applications_deb(fspath)
+        elif RPM.match(os_info["name"]):
             apps = list_applications_rpm(fspath)
         elif WIN.match(os_info["name"]):
             apps = list_applications_windows(fspath)

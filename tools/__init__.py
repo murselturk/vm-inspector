@@ -4,7 +4,12 @@ import os
 from functools import wraps
 from subprocess import run
 
-__all__ = ["unmount", "rmdir"]
+__all__ = [
+    "unmount",
+    "rmdir",
+    "subdirs",
+    "subfiles"
+]
 
 L = logging.getLogger(__name__)
 
@@ -71,3 +76,29 @@ def rmdir(path):
         return False
 
     return True
+
+
+@log
+def subdirs(path):
+    """Yield directory names under given path using os.scandir.
+
+    See also:
+    https://docs.python.org/3/library/os.html#os.scandir
+    """
+    with os.scandir(path) as it:
+        for entry in it:
+            if not entry.name.startswith(".") and entry.is_dir():
+                yield entry.name
+
+
+@log
+def subfiles(path):
+    """Yield file names under given path using os.scandir.
+
+    See also:
+    https://docs.python.org/3/library/os.html#os.scandir
+    """
+    with os.scandir(path) as it:
+        for entry in it:
+            if not entry.name.startswith(".") and entry.is_file():
+                yield entry.name

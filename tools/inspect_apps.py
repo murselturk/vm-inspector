@@ -2,9 +2,10 @@ import logging
 import os
 import tempfile
 
-from . import log
+from . import log, subdirs
 
 __all__ = [
+    "list_applications_deb",
     "list_applications_rpm",
     "list_applications_windows"
 ]
@@ -28,6 +29,78 @@ except ModuleNotFoundError:
         "pip3 install python-registry"
         )
     raise
+
+
+@log
+def list_applications_deb(path):
+    """Find all packages installed on a debian-based linux distribution.
+
+    See also:
+    https://man7.org/linux/man-pages/man1/dpkg.1.html
+
+    Args:
+        path (str): Path to the mounted filesystem.
+
+    Returns:
+        List of packages. For example:
+        [{'name': 'adduser', 'version': '3.118'}, ...]
+    """
+    dpkg_db = None
+
+    locations = [
+        "var/lib/dpkg/status",
+        "lib/dpkg/status"  # separated /var partition
+    ]
+
+    for location in locations:
+        db = os.path.join(path, location)
+        if os.path.exists(db):
+            dpkg_db = db
+            break
+
+    # Debian uses subvol=@rootfs for root filesystem for btrfs.
+    # Therefore, under Debian 11.* looks like this: /@rootfs/var/lib/dpkg
+    if dpkg_db is None:
+        for dir in subdirs(path):
+            new_path = os.path.join(path, dir)
+            for location in locations:
+                db = os.path.join(new_path, location)
+                if os.path.exists(db):
+                    dpkg_db = db
+                    break
+            if dpkg_db is not None:
+                break
+
+    if dpkg_db is None:
+        L.debug("dpkg database not found")
+        return []
+
+    pkgs = []
+    with open(dpkg_db) as f:
+        name = version = ""
+        installed = False
+        count = 0
+        for line in f:
+            if count >= 10:
+                break
+            line = line.strip()
+            if not line:
+                if name and version and installed:
+                    pkgs.append({
+                        "name": name,
+                        "version": version
+                    })
+                    count += 1
+                name = version = ""
+                installed = False
+            elif line.startswith("Package:"):
+                name = line[9:]
+            elif line.startswith("Status:"):
+                installed = "installed" in line[8:].split()
+            elif line.startswith("Version:"):
+                version = line[9:]
+
+    return pkgs
 
 
 @log
@@ -75,16 +148,16 @@ def list_applications_rpm(path):
         L.error("failed to open RPM database: %r", e)
         return []
 
-    ret = []
+    pkgs = []
     for h in dbMatch:
-        ret.append({
+        pkgs.append({
             "name": h["name"],
             "version": h["version"]
         })
 
     rpm.delMacro("_dbpath")
 
-    return ret
+    return pkgs
 
 
 @log
@@ -121,7 +194,7 @@ def list_applications_windows(path):
         L.error("failed to open registry file %s: %r", software, e)
         return []
 
-    ret = []
+    apps = []
 
     # native applications
     hive_path = "Microsoft\\Windows\\CurrentVersion\\Uninstall"
@@ -129,9 +202,9 @@ def list_applications_windows(path):
         key = registry.open(hive_path)
     except Exception as e:
         L.error("%s not found in %s: %r", hive_path, software, e)
-        return ret
+        return apps
     if apps_native := _list_applications_windows_from_key(key):
-        ret.extend(apps_native)
+        apps.extend(apps_native)
 
     # 32-bit applications running on WOW64 emulator
     # see also: http://support.microsoft.com/kb/896459
@@ -140,11 +213,11 @@ def list_applications_windows(path):
         key = registry.open(hive_path)
     except Exception as e:
         L.error("%s not found in %s: %r", hive_path, software, e)
-        return ret
+        return apps
     if apps_emulator := _list_applications_windows_from_key(key):
-        ret.extend(apps_emulator)
+        apps.extend(apps_emulator)
 
-    return ret
+    return apps
 
 
 @log
@@ -160,7 +233,7 @@ def _list_applications_windows_from_key(key):
     Returns:
         List of applications.
     """
-    ret = []
+    apps = []
     for k in key.subkeys():
         # name = k.name()
         # name does not say much, so take the display name
@@ -172,9 +245,9 @@ def _list_applications_windows_from_key(key):
                 version = v.value()
         # ignore applications with no display name
         if name and version:
-            ret.append({
+            apps.append({
                 "name": name,
                 "version": version
             })
 
-    return ret
+    return apps
