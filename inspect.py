@@ -8,6 +8,7 @@ import sys
 from tools import libvslvm, lklfuse, nbdfuse, subfiles, unmount, rmdir
 from tools.inspect_apps import (
     list_applications_deb,
+    list_applications_pacman,
     list_applications_rpm,
     list_applications_windows
 )
@@ -18,6 +19,7 @@ fmt = "{asctime}, {name}:{lineno}:{funcName}(), {levelname}, {message}"
 logging.basicConfig(level=logging.DEBUG, format=fmt, style="{")
 
 DEB = re.compile(r"^(Debian|Ubuntu|Linux\sMint|LMDE).*$")
+PACMAN = re.compile(r"^(Arch|Manjaro).*$")
 RPM = re.compile(r"^(CentOS|AlmaLinux|Scientific|Rocky|Oracle|openSUSE|Fedora).*$") # noqa
 WIN = re.compile(r"^(Microsoft|Windows).*$")
 
@@ -62,12 +64,15 @@ def main(vmdk_path):
         if os_info:
             break
 
+    os_name = os_info.get("name", "")
     for fspath, _ in fs_mps:
-        if DEB.match(os_info["name"]):
+        if DEB.match(os_name):
             apps = list_applications_deb(fspath)
-        elif RPM.match(os_info["name"]):
+        elif PACMAN.match(os_name):
+            apps = list_applications_pacman(fspath)
+        elif RPM.match(os_name):
             apps = list_applications_rpm(fspath)
-        elif WIN.match(os_info["name"]):
+        elif WIN.match(os_name):
             apps = list_applications_windows(fspath)
         if apps:
             break

@@ -1,11 +1,13 @@
 import logging
 import os
+import re
 import tempfile
 
 from . import log, subdirs
 
 __all__ = [
     "list_applications_deb",
+    "list_applications_pacman",
     "list_applications_rpm",
     "list_applications_windows"
 ]
@@ -95,6 +97,71 @@ def list_applications_deb(path):
                 installed = "installed" in line[8:].split()
             elif line.startswith("Version:"):
                 version = line[9:]
+
+    return pkgs
+
+
+@log
+def list_applications_pacman(path):
+    """Find all packages installed on a arch-based linux distribution.
+
+    See also:
+    https://wiki.archlinux.org/title/pacman
+
+    Args:
+        path (str): Path to the mounted filesystem.
+
+    Returns:
+        List of packages. For example:
+        [{'name': 'python', 'version': '3.10.6-1'}, ...]
+    """
+    pacman_db = None
+
+    locations = [
+        "var/lib/pacman/local",
+        "lib/pacman/local"  # separated /var partition
+    ]
+
+    for location in locations:
+        db = os.path.join(path, location)
+        if os.path.exists(db):
+            pacman_db = db
+            break
+
+    # Just in case the system is using btrfs.
+    if pacman_db is None:
+        for dir in subdirs(path):
+            new_path = os.path.join(path, dir)
+            for location in locations:
+                db = os.path.join(new_path, location)
+                if os.path.exists(db):
+                    pacman_db = db
+                    break
+            if pacman_db is not None:
+                break
+
+    if pacman_db is None:
+        L.debug("pacman database not found")
+        return []
+
+    pkgs = []
+    for dir in subdirs(pacman_db):
+        desc = os.path.join(pacman_db, dir, "desc")
+        kv = {}
+        with open(desc) as f:
+            sections = re.split(r"\n(?=%[A-Z]+%)", f.read())
+            for section in sections:
+                section = section.strip()
+                if lines := section.split("\n"):
+                    k = lines[0].strip("%")
+                    n = len(lines)
+                    v = "" if n < 2 else lines[1:] if n > 2 else lines[1]
+                    kv[k] = v
+        if (name := kv.get("NAME", "")) and (version := kv.get("VERSION", "")):
+            pkgs.append({
+                "name": name,
+                "version": version
+            })
 
     return pkgs
 

@@ -78,7 +78,6 @@ def rmdir(path):
     return True
 
 
-@log
 def subdirs(path):
     """Yield directory names under given path using os.scandir.
 
@@ -91,7 +90,6 @@ def subdirs(path):
                 yield entry.name
 
 
-@log
 def subfiles(path):
     """Yield file names under given path using os.scandir.
 

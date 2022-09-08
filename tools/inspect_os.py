@@ -72,6 +72,10 @@ def get_linux_os_info(path):
                 kv[k] = v
             name = kv.get("NAME", "")
             version = kv.get("VERSION", kv.get("VERSION_ID", ""))
+            # Arch-based distros have neither VERSION nor VERSION_ID.
+            # These are using a rolling release model.
+            if not version:
+                version = kv.get("BUILD_ID", "")
     elif "system-release" in release_files:
         # RedHat (RHEL) provides the redhat-release file. However, it does not
         # seem to be reliable for determining which operating system it is.
