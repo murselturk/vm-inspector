@@ -7,7 +7,7 @@ import sys
 
 from tools import libvslvm, lklfuse, nbdfuse, subfiles, unmount, rmdir
 from tools.inspect_apps import (
-    list_applications_deb,
+    list_applications_dpkg,
     list_applications_pacman,
     list_applications_rpm,
     list_applications_windows
@@ -67,7 +67,7 @@ def main(vmdk_path):
     os_name = os_info.get("name", "")
     for fspath, _ in fs_mps:
         if DEB.match(os_name):
-            apps = list_applications_deb(fspath)
+            apps = list_applications_dpkg(fspath)
         elif PACMAN.match(os_name):
             apps = list_applications_pacman(fspath)
         elif RPM.match(os_name):

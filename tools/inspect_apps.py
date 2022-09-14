@@ -6,7 +6,7 @@ import tempfile
 from . import log, subdirs
 
 __all__ = [
-    "list_applications_deb",
+    "list_applications_dpkg",
     "list_applications_pacman",
     "list_applications_rpm",
     "list_applications_windows"
@@ -34,7 +34,7 @@ except ModuleNotFoundError:
 
 
 @log
-def list_applications_deb(path):
+def list_applications_dpkg(path):
     """Find all packages installed on a debian-based linux distribution.
 
     See also:
