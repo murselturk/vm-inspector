@@ -7,6 +7,7 @@ import sys
 
 from tools import libvslvm, lklfuse, nbdfuse, subfiles, unmount, rmdir
 from tools.inspect_apps import (
+    list_applications_apk,
     list_applications_dpkg,
     list_applications_pacman,
     list_applications_rpm,
@@ -18,6 +19,7 @@ from tools.pyparted import list_partitions
 fmt = "{asctime}, {name}:{lineno}:{funcName}(), {levelname}, {message}"
 logging.basicConfig(level=logging.DEBUG, format=fmt, style="{")
 
+APK = re.compile(r"^(Alpine).*$")
 DEB = re.compile(r"^(Debian|Ubuntu|Linux\sMint|LMDE).*$")
 PACMAN = re.compile(r"^(Arch|Manjaro).*$")
 RPM = re.compile(r"^(CentOS|AlmaLinux|Scientific|Rocky|Oracle|openSUSE|Fedora).*$") # noqa
@@ -66,7 +68,9 @@ def main(vmdk_path):
 
     os_name = os_info.get("name", "")
     for fspath, _ in fs_mps:
-        if DEB.match(os_name):
+        if APK.match(os_name):
+            apps = list_applications_apk(fspath)
+        elif DEB.match(os_name):
             apps = list_applications_dpkg(fspath)
         elif PACMAN.match(os_name):
             apps = list_applications_pacman(fspath)

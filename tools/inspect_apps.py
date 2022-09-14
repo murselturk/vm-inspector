@@ -6,6 +6,7 @@ import tempfile
 from . import log, subdirs
 
 __all__ = [
+    "list_applications_apk",
     "list_applications_dpkg",
     "list_applications_pacman",
     "list_applications_rpm",
@@ -31,6 +32,60 @@ except ModuleNotFoundError:
         "pip3 install python-registry"
         )
     raise
+
+
+@log
+def list_applications_apk(path):
+    """Find all packages installed on the linux distribution Alpine Linux.
+
+    See also:
+    https://wiki.alpinelinux.org/wiki/Alpine_Package_Keeper
+
+    Args:
+        path (str): Path to the mounted filesystem.
+
+    Returns:
+        List of packages. For example:
+        [{'name': 'musl', 'version': '1.2.3-r0'}, ...]
+    """
+    apk_db = None
+
+    location = "lib/apk/db/installed"
+
+    db = os.path.join(path, location)
+    if os.path.exists(db):
+        apk_db = db
+
+    if apk_db is None:
+        for dir in subdirs(path):
+            new_path = os.path.join(path, dir)
+            db = os.path.join(new_path, location)
+            if os.path.exists(db):
+                apk_db = db
+                break
+
+    if apk_db is None:
+        L.debug("apk database not found")
+        return []
+
+    pkgs = []
+    with open(apk_db) as f:
+        name = version = ""
+        for line in f:
+            line = line.strip()
+            if not line:
+                if name and version:
+                    pkgs.append({
+                        "name": name,
+                        "version": version
+                    })
+                name = version = ""
+            elif line.startswith("P:"):
+                name = line[2:]
+            elif line.startswith("V:"):
+                version = line[2:]
+
+    return pkgs
 
 
 @log
