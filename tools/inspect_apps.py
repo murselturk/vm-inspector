@@ -9,6 +9,7 @@ __all__ = [
     "list_applications_apk",
     "list_applications_dpkg",
     "list_applications_pacman",
+    "list_applications_portage",
     "list_applications_rpm",
     "list_applications_windows"
 ]
@@ -217,6 +218,63 @@ def list_applications_pacman(path):
                 "name": name,
                 "version": version
             })
+
+    return pkgs
+
+
+@log
+def list_applications_portage(path):
+    """Find all packages installed on the linux distribution Gentoo Linux.
+
+    See also:
+    https://wiki.gentoo.org/wiki/Portage
+
+    Args:
+        path (str): Path to the mounted filesystem.
+
+    Returns:
+        List of packages. For example:
+        [{'name': 'sys-devel/bison', 'version': '3.8.2'}, ...]
+    """
+    portage_db = None
+
+    locations = [
+        "var/db/pkg",
+        "db/pkg"  # separated /var partition
+    ]
+
+    for location in locations:
+        db = os.path.join(path, location)
+        if os.path.exists(db):
+            portage_db = db
+            break
+
+    # btrfs?
+    if portage_db is None:
+        for dir in subdirs(path):
+            new_path = os.path.join(path, dir)
+            for location in locations:
+                db = os.path.join(new_path, location)
+                if os.path.exists(db):
+                    portage_db = db
+                    break
+            if portage_db is not None:
+                break
+
+    if portage_db is None:
+        L.debug("portage database not found")
+        return []
+
+    pkgs = []
+    for cat in subdirs(portage_db):
+        for pkg in subdirs(os.path.join(portage_db, cat)):
+            # https://projects.gentoo.org/pms/8/pms.html#x1-150003
+            if m := re.match(r"^(.+)-(\d.*)$", pkg):
+                name, version = m.groups()
+                pkgs.append({
+                    "name": "/".join([cat, name]),
+                    "version": version
+                })
 
     return pkgs
 

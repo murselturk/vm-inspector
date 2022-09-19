@@ -61,6 +61,14 @@ def get_linux_os_info(path):
             # AlmaLinux 8.* and Rocky Linux 8.* also have centos-release.
             if m := re.match(r"^(.*)\srelease\s(.*)$", f.read()):
                 name, version = m.groups()
+    elif "gentoo-release" in release_files:
+        # Gentoo now has a VERSION_ID tag in os-release, which did not exist
+        # before. See also https://bugs.gentoo.org/788190. For consistency,
+        # gentoo-release is parsed before os-release at this point.
+        L.debug("parsing %s", release_files["gentoo-release"])
+        with open(release_files["gentoo-release"]) as f:
+            if m := re.match(r"^(Gentoo).*release\s(.*)$", f.read()):
+                name, version = m.groups()
     elif "os-release" in release_files:
         L.debug("parsing %s", release_files["os-release"])
         with open(release_files["os-release"]) as f:

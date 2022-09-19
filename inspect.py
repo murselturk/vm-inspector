@@ -10,6 +10,7 @@ from tools.inspect_apps import (
     list_applications_apk,
     list_applications_dpkg,
     list_applications_pacman,
+    list_applications_portage,
     list_applications_rpm,
     list_applications_windows
 )
@@ -20,8 +21,9 @@ fmt = "{asctime}, {name}:{lineno}:{funcName}(), {levelname}, {message}"
 logging.basicConfig(level=logging.DEBUG, format=fmt, style="{")
 
 APK = re.compile(r"^(Alpine).*$")
-DEB = re.compile(r"^(Debian|Ubuntu|Linux\sMint|LMDE).*$")
+DPKG = re.compile(r"^(Debian|Ubuntu|Linux\sMint|LMDE).*$")
 PACMAN = re.compile(r"^(Arch|Manjaro).*$")
+PORTAGE = re.compile(r"^(Gentoo).*$")
 RPM = re.compile(r"^(CentOS|AlmaLinux|Scientific|Rocky|Oracle|openSUSE|Fedora).*$") # noqa
 WIN = re.compile(r"^(Microsoft|Windows).*$")
 
@@ -70,10 +72,12 @@ def main(vmdk_path):
     for fspath, _ in fs_mps:
         if APK.match(os_name):
             apps = list_applications_apk(fspath)
-        elif DEB.match(os_name):
+        elif DPKG.match(os_name):
             apps = list_applications_dpkg(fspath)
         elif PACMAN.match(os_name):
             apps = list_applications_pacman(fspath)
+        elif PORTAGE.match(os_name):
+            apps = list_applications_portage(fspath)
         elif RPM.match(os_name):
             apps = list_applications_rpm(fspath)
         elif WIN.match(os_name):
