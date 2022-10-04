@@ -13,8 +13,8 @@ L = logging.getLogger(__name__)
 
 @log
 def mount(path):
-    """Mount a VMware Virtual Machine Disk (VMDK) file as a RAW image file in
-    the local filesystem with read-only support using `qemu-nbd` + `nbdfuse`.
+    """Mount a disk image file as a RAW image file in the local filesystem with
+    read-only support using `qemu-nbd` + `nbdfuse`.
 
     See also:
     https://manpages.debian.org/bullseye/qemu-utils/qemu-nbd.8.en.html
@@ -24,7 +24,7 @@ def mount(path):
         $ sudo apt install qemu-utils nbdfuse
 
     Args:
-        path (str): Path to the VMDK file.
+        path (str): Path to the disk image file.
 
     Returns:
         Path to the directory containing a single virtual file named `nbd`.
@@ -37,7 +37,6 @@ def mount(path):
         "--socket-activation",
         "qemu-nbd",
         "--read-only",
-        "--format=vmdk",
         path
     ]
 
