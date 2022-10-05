@@ -121,7 +121,7 @@ unmount(image_mp)
 rmdir(image_mp)
 
 print({
-    "os_name": os_info.get("name", ""),
-    "os_version": os_info.get("name", ""),
+    "name": os_info.get("name", ""),
+    "version": os_info.get("version", ""),
     "apps": apps
 })
