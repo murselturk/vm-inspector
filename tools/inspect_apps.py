@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-import tempfile
 
 from . import log, subdirs
 
@@ -126,8 +125,9 @@ def list_applications_dpkg(path):
                 if os.path.exists(db):
                     dpkg_db = db
                     break
-            if dpkg_db is not None:
-                break
+            else:
+                continue
+            break
 
     if dpkg_db is None:
         L.debug("dpkg database not found")
@@ -193,8 +193,9 @@ def list_applications_pacman(path):
                 if os.path.exists(db):
                     pacman_db = db
                     break
-            if pacman_db is not None:
-                break
+            else:
+                continue
+            break
 
     if pacman_db is None:
         L.debug("pacman database not found")
@@ -213,7 +214,7 @@ def list_applications_pacman(path):
                     n = len(lines)
                     v = "" if n < 2 else lines[1:] if n > 2 else lines[1]
                     kv[k] = v
-        if (name := kv.get("NAME", "")) and (version := kv.get("VERSION", "")):
+        if (name := kv.get("NAME")) and (version := kv.get("VERSION")):
             pkgs.append({
                 "name": name,
                 "version": version
@@ -258,8 +259,9 @@ def list_applications_portage(path):
                 if os.path.exists(db):
                     portage_db = db
                     break
-            if portage_db is not None:
-                break
+            else:
+                continue
+            break
 
     if portage_db is None:
         L.debug("portage database not found")
@@ -312,9 +314,7 @@ def list_applications_rpm(path):
         L.debug("RPM database not found")
         return []
 
-    log_file = tempfile.TemporaryFile()
-    rpm.setLogFile(log_file)
-    rpm.setVerbosity(rpm.RPMLOG_DEBUG)
+    rpm.setVerbosity(rpm.RPMLOG_CRIT)
     rpm.addMacro("_dbpath", rpm_db)
     ts = rpm.TransactionSet()
 

@@ -36,15 +36,17 @@ def get_linux_os_info(path):
     release_files = {}
     for root, dirs, _ in os.walk(path):
         if "etc" in dirs:
-            skip = False
             for f in iglob(f"{root}/etc/*release"):
                 # Hack for immutable operating systems of Fedora.
                 if not os.path.exists(f):
-                    skip = True
+                    release_files.clear()
                     break
-                release_files[os.path.basename(f)] = f
-            if release_files and not skip:
-                break
+                if os.path.isfile(f):
+                    release_files[os.path.basename(f)] = f
+            else:
+                if release_files:
+                    break
+            continue
 
     if not release_files:
         L.debug("no release file found")
