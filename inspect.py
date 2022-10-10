@@ -3,7 +3,6 @@
 import argparse
 import logging
 import os
-import re
 import sys
 
 from tools import libvmdk, libvslvm, lklfuse, nbdfuse, subfiles, unmount, rmdir
@@ -36,13 +35,6 @@ if args.verbose:
     logging.basicConfig(level=logging.DEBUG, format=fmt, style="{")
 else:
     logging.basicConfig(level=logging.CRITICAL)
-
-APK = re.compile(r"^(Alpine).*$")
-DPKG = re.compile(r"^(Debian|Ubuntu|Linux\sMint|LMDE).*$")
-PACMAN = re.compile(r"^(Arch|Manjaro).*$")
-PORTAGE = re.compile(r"^(Gentoo).*$")
-RPM = re.compile(r"^(CentOS|AlmaLinux|Scientific|Rocky|Oracle|openSUSE|Fedora).*$") # noqa
-WIN = re.compile(r"^(Microsoft|Windows).*$")
 
 if args.backend == "libvmdk":
     image_mp = libvmdk.mount(args.image)
@@ -92,22 +84,24 @@ for k, v in fs_mps:
         break
 
 apps = []
-if os_name := os_info.get("name"):
-    for k, _ in fs_mps:
-        if APK.match(os_name):
-            apps = list_applications_apk(k)
-        elif DPKG.match(os_name):
-            apps = list_applications_dpkg(k)
-        elif PACMAN.match(os_name):
-            apps = list_applications_pacman(k)
-        elif PORTAGE.match(os_name):
-            apps = list_applications_portage(k)
-        elif RPM.match(os_name):
-            apps = list_applications_rpm(k)
-        elif WIN.match(os_name):
-            apps = list_applications_windows(k)
-        if apps:
-            break
+package_manager = os_info.get("package_manager", "")
+for k, _ in fs_mps:
+    if package_manager == "apk":
+        apps = list_applications_apk(k)
+    elif package_manager == "dpkg":
+        apps = list_applications_dpkg(k)
+    elif package_manager == "pacman":
+        apps = list_applications_pacman(k)
+    elif package_manager == "portage":
+        apps = list_applications_portage(k)
+    elif package_manager == "rpm":
+        apps = list_applications_rpm(k)
+    elif package_manager == "win":
+        apps = list_applications_windows(k)
+    else:
+        break
+    if apps:
+        break
 
 for k, _ in fs_mps:
     unmount(k)
