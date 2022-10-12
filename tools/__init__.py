@@ -60,6 +60,25 @@ def unmount(path):
 
 
 @log
+def rm(path):
+    """Remove a file.
+
+    Args:
+        path (str): Path to file.
+
+    Returns:
+        True if the command was successful, False otherwise.
+    """
+    try:
+        os.remove(path)
+    except OSError as e:
+        L.error("failed to remove file %s: %r", path, e)
+        return False
+
+    return True
+
+
+@log
 def rmdir(path):
     """Remove a directory.
 
