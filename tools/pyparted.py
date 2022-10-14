@@ -1,20 +1,11 @@
 import logging
+import parted  # type: ignore
 
 from . import log
 
 __all__ = ["list_partitions"]
 
 L = logging.getLogger(__name__)
-
-try:
-    import parted  # type: ignore
-except ModuleNotFoundError:
-    L.error(
-        "You need to install the following packages:\n"
-        "sudo apt install python3-dev libparted-dev pkg-config\n"
-        "pip3 install pyparted"
-        )
-    raise
 
 SUPPORTED_FS_TYPES = ["ext2", "ext3", "ext4", "xfs", "btrfs", "vfat", "ntfs"]
 

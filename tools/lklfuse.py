@@ -16,15 +16,6 @@ def mount(path, fs_type, part_nr=None):
     """Mount a RAW image file containing an ext2/ext3/ext4/xfs/btrfs/vfat/ntfs
     filesystem with read-only support using `lklfuse`.
 
-    Make sure you have built `LKL` from the source code:
-        $ sudo apt install build-essential flex bison bc libfuse-dev \
-            libarchive-dev xfsprogs python git
-        $ git clone https://github.com/lkl/linux.git
-        $ cd linux
-        $ echo "CONFIG_NTFS_FS=y" >> arch/lkl/configs/defconfig
-        $ make -C tools/lkl
-        $ sudo cp tools/lkl/lklfuse /usr/local/bin
-
     Args:
         path (str): Path to the RAW image file.
         fs_type (str): Filesystem type.

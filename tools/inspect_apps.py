@@ -1,7 +1,9 @@
 import logging
 import os
 import re
+import rpm  # type: ignore
 
+from Registry import Registry  # type: ignore
 from . import log, subdirs
 
 __all__ = [
@@ -14,24 +16,6 @@ __all__ = [
 ]
 
 L = logging.getLogger(__name__)
-
-try:
-    import rpm  # type: ignore
-except ModuleNotFoundError:
-    L.error(
-        "You need to install the following package:\n"
-        "sudo apt install python3-rpm"
-        )
-    raise
-
-try:
-    from Registry import Registry  # type: ignore
-except ModuleNotFoundError:
-    L.error(
-        "You need to install the following package:\n"
-        "pip3 install python-registry"
-        )
-    raise
 
 
 @log

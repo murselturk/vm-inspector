@@ -20,9 +20,6 @@ def mount(path):
     https://manpages.debian.org/bullseye/qemu-utils/qemu-nbd.8.en.html
     https://manpages.debian.org/bullseye/libnbd-bin/nbdfuse.1.en.html
 
-    Make sure you have the following packages installed:
-        $ sudo apt install qemu-utils nbdfuse
-
     Args:
         path (str): Path to the disk image file.
 

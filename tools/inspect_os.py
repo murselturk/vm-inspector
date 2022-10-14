@@ -3,20 +3,12 @@ import logging
 import re
 
 from glob import iglob
+from Registry import Registry  # type: ignore
 from . import log
 
 __all__ = ["get_linux_os_info", "get_windows_os_info"]
 
 L = logging.getLogger(__name__)
-
-try:
-    from Registry import Registry  # type: ignore
-except ModuleNotFoundError:
-    L.error(
-        "You need to install the following package:\n"
-        "pip3 install python-registry"
-        )
-    raise
 
 
 @log

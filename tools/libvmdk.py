@@ -19,19 +19,7 @@ def mount(path):
     local filesystem with read-only support using `libvmdk`.
 
     See also:
-    https://github.com/libyal/libvmdk/wiki/Building
     https://github.com/libyal/libvmdk/wiki/Mounting
-
-    Make sure you have downloaded the latest source distribution package from
-    https://github.com/libyal/libvmdk/releases, e.g.
-    libvmdk-alpha-20210807.tar.gz and built it as follows:
-        $ sudo apt install build-essential libfuse-dev
-        $ tar xfv libvmdk-alpha-20210807.tar.gz
-        $ cd libvmdk-20210807/
-        $ ./configure
-        $ make
-        $ sudo make install
-        $ sudo ldconfig
 
     Args:
         path (str): Path to the VMDK file.

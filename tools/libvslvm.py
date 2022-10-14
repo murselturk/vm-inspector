@@ -17,18 +17,6 @@ def mount(path, offset):
 
     See also:
     https://github.com/libyal/libvslvm/wiki/Mounting
-    https://github.com/libyal/libvslvm/wiki/Building
-
-    Make sure you have downloaded the latest source distribution package from
-    https://github.com/libyal/libvslvm/releases, e.g.
-    libvslvm-experimental-20210807.tar.gz and built it as follows:
-        $ sudo apt install build-essential libfuse-dev
-        $ tar xfv libvslvm-experimental-20210807.tar.gz
-        $ cd libvslvm-20210807/
-        $ ./configure
-        $ make
-        $ sudo make install
-        $ sudo ldconfig
 
     Args:
         path (str): Path to the RAW image file containing LVM volume system.
