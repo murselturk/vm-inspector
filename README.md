@@ -19,7 +19,7 @@ or
 ## CLI options
 
 ```sh
-./inspect.py foo.vmdk --help
+./inspect.py --help
 ```
 
 ```
